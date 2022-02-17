@@ -1,8 +1,12 @@
 from flask import Flask, request
 
 from app import Parser
+from app import GeoWrapper
+from app import WikiWrapper
 
 app = Flask(__name__)
+
+
 # Pour lancer l'app : export FLASK_APP=hello + flask run
 
 
@@ -14,6 +18,16 @@ def question():
         question = request.form["question"]
 
         parser = Parser(question)
-        return parser.question
+        myGeoWrapper = GeoWrapper(parser.question)
+        myWikiWrapper = WikiWrapper(myGeoWrapper.latitude, myGeoWrapper.longitude)
+        return {
+            "basicQuestion" : question,
+            "parsedContent": parser.question,
+            "geocode" : {
+                "latitude" : myGeoWrapper.latitude,
+                "longitude" : myGeoWrapper.longitude
+            },
+            "wikipedia" : myWikiWrapper.content
+        }
     else:
         return "Cette méthode n'est pas autorisée"
